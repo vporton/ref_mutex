@@ -1,0 +1,13 @@
+# cargo-features = ["edition2021"]
+
+[package]
+name = "mutex-extra"
+version = "0.1.0"
+# edition = "2021"
+
+[lib]
+name = "ref_mutex"
+
+# TODO: [dev-dependencies]
+[dependencies]
+owning_ref = "*"
