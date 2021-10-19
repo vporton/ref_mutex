@@ -19,9 +19,9 @@ use std::{fmt::{self}, marker::PhantomData, sync::{LockResult, Mutex, MutexGuard
 
 // TODO: Requirement `T: 'mutex_guard` is superfluous.
 pub struct RefMutexGuard<'t, 'mutex_guard: 't, T> {
-    // base: MutexGuard<'mutex_guard, &'mutex_guard T>,
+    // base: MutexGuard<'mutex_guard, &'t T>,
     base: MutexGuard<'mutex_guard, &'t T>,
-    phantom: PhantomData<&'mutex_guard T>,
+    phantom: PhantomData<&'t T>,
 }
 
 // TODO
@@ -34,11 +34,11 @@ unsafe impl<'mutex, T: Sync> Sync for RefMutex<'mutex, T> {}
 
 impl<'t, 'mutex_guard, T> RefMutexGuard<'t, 'mutex_guard, T>
 {
-    fn new_helper(lock: MutexGuard<'mutex_guard, &'mutex_guard T>) -> RefMutexGuard<'t, 'mutex_guard, T> {
+    fn new_helper(lock: MutexGuard<'mutex_guard, &'t T>) -> RefMutexGuard<'t, 'mutex_guard, T> {
         RefMutexGuard { base: lock, phantom: PhantomData }
     }
     // TODO: pub?
-    fn new(lock: LockResult<MutexGuard<'mutex_guard, &'mutex_guard T>>)
+    fn new(lock: LockResult<MutexGuard<'mutex_guard, &'t T>>)
         -> Result<RefMutexGuard<'t, 'mutex_guard, T>, PoisonError<RefMutexGuard<'t, 'mutex_guard, T>>>
     {
         match lock {
@@ -50,7 +50,7 @@ impl<'t, 'mutex_guard, T> RefMutexGuard<'t, 'mutex_guard, T>
             },
         }
     }
-    fn new2(lock: TryLockResult<MutexGuard<'mutex_guard, &'mutex_guard T>>)
+    fn new2(lock: TryLockResult<MutexGuard<'mutex_guard, &'t T>>)
         -> Result<RefMutexGuard<'t, 'mutex_guard, T>, TryLockError<RefMutexGuard<'t, 'mutex_guard, T>>>
     {
         match lock {
@@ -231,9 +231,8 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// ```
     // FIXME: Simplify?
     // FIXME: The output lifetime must be 
-    pub fn try_lock<'mutex_guard>(&'mutex self) -> TryLockResult<RefMutexGuard<'_, 'mutex_guard, T>>
+    pub fn try_lock<'mutex_guard>(&/*'mutex*/ self) -> TryLockResult<RefMutexGuard<'_, 'mutex_guard, T>>
     where 'mutex: 'mutex_guard
-    // where 'mutex: 'mutex_guard
     {
         RefMutexGuard::new2(self.base.try_lock())
     }
