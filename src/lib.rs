@@ -8,38 +8,37 @@ pub use std::ops::{Deref, DerefMut};
 
 use std::{fmt::{self}, marker::PhantomData, sync::{LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
 
-// struct SafeRef<'a, T>(&'a T);
+// struct SafeRef<'a, R>(&'a R);
 
 // trait MyDeref {
 //     type Target;
-//     fn deref(&self) -> &T {
+//     fn deref(&self) -> &R {
 //         self.lock()
 //     }
 // }
 
-// TODO: Requirement `T: 'mutex_guard` is superfluous.
-pub struct RefMutexGuard<'t, 'mutex_guard: 't, T> {
-    // base: MutexGuard<'mutex_guard, &'t T>,
-    base: MutexGuard<'mutex_guard, &'t T>,
-    phantom: PhantomData<&'t T>,
+// TODO: Requirement `R: 'mutex_guard` is superfluous.
+pub struct RefMutexGuard<'mutex_guard, R: 'mutex_guard> {
+    base: MutexGuard<'mutex_guard, &'mutex_guard R>,
+    phantom: PhantomData<&'mutex_guard R>,
 }
 
 // TODO
 // Needed?
-// impl<T> !Send for RefMutexGuard<'_, T> {}
+// impl<R> !Send for RefMutexGuard<'_, R> {}
 
 // TODO: Automatically implemented?
-// unsafe impl<T: Sync, &'mutex_guard T> Sync for RefMutexGuard<'_, T> {} // FIXME
-unsafe impl<'mutex, T: Sync> Sync for RefMutex<'mutex, T> {}
+// unsafe impl<R: Sync, &'mutex_guard R> Sync for RefMutexGuard<'_, R> {} // FIXME
+unsafe impl<'mutex, R: Sync> Sync for RefMutex<'mutex, R> {}
 
-impl<'t, 'mutex_guard, T> RefMutexGuard<'t, 'mutex_guard, T>
+impl<'mutex_guard, R> RefMutexGuard<'mutex_guard, R>
 {
-    fn new_helper(lock: MutexGuard<'mutex_guard, &'t T>) -> RefMutexGuard<'t, 'mutex_guard, T> {
+    fn new_helper(lock: MutexGuard<'mutex_guard, &'mutex_guard R>) -> RefMutexGuard<'mutex_guard, R> {
         RefMutexGuard { base: lock, phantom: PhantomData }
     }
     // TODO: pub?
-    fn new(lock: LockResult<MutexGuard<'mutex_guard, &'t T>>)
-        -> Result<RefMutexGuard<'t, 'mutex_guard, T>, PoisonError<RefMutexGuard<'t, 'mutex_guard, T>>>
+    fn new(lock: LockResult<MutexGuard<'mutex_guard, &'mutex_guard R>>)
+        -> Result<RefMutexGuard<'mutex_guard, R>, PoisonError<RefMutexGuard<'mutex_guard, R>>>
     {
         match lock {
             Ok(lock) => Ok(Self::new_helper(lock)),
@@ -50,8 +49,8 @@ impl<'t, 'mutex_guard, T> RefMutexGuard<'t, 'mutex_guard, T>
             },
         }
     }
-    fn new2(lock: TryLockResult<MutexGuard<'mutex_guard, &'t T>>)
-        -> Result<RefMutexGuard<'t, 'mutex_guard, T>, TryLockError<RefMutexGuard<'t, 'mutex_guard, T>>>
+    fn new2(lock: TryLockResult<MutexGuard<'mutex_guard, &'mutex_guard R>>)
+        -> Result<RefMutexGuard<'mutex_guard, R>, TryLockError<RefMutexGuard<'mutex_guard, R>>>
     {
         match lock {
             Ok(lock) => Ok(Self::new_helper(lock)),
@@ -65,22 +64,22 @@ impl<'t, 'mutex_guard, T> RefMutexGuard<'t, 'mutex_guard, T>
     }
 }
 
-impl<T> Deref for RefMutexGuard<'_, '_, T> {
-    type Target = T;
+impl<R> Deref for RefMutexGuard<'_, R> {
+    type Target = R;
 
-    fn deref(&self) -> &T {
+    fn deref(&self) -> &R {
         &*self.base.deref()
     }
 }
 
-impl<T> DerefMut for RefMutexGuard<'_, '_, T> {
-    fn deref_mut(&mut self) -> &mut T {
+impl<R> DerefMut for RefMutexGuard<'_, R> {
+    fn deref_mut(&mut self) -> &mut R {
         &mut *self.base.deref_mut()
     }
 }
 
 // TODO: Make better
-impl<T: fmt::Debug> fmt::Debug for RefMutexGuard<'_, '_, T> {
+impl<R: fmt::Debug> fmt::Debug for RefMutexGuard<'_, R> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("RefMutexGuard(")?;
         self.base.fmt(f)?;
@@ -89,38 +88,38 @@ impl<T: fmt::Debug> fmt::Debug for RefMutexGuard<'_, '_, T> {
     }
 }
 
-impl<T: fmt::Display> fmt::Display for RefMutexGuard<'_, '_, T> {
+impl<R: fmt::Display> fmt::Display for RefMutexGuard<'_, R> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.base.fmt(f)
     }
 }
 
-// sys::MovableMutex isn't public API.
-// pub fn guard_lock<'a, T>(guard: &RefMutexGuard<'a, T>) -> &'a sys::MovableMutex {
+// sys::MovableMutex isn'mutex_guard public API.
+// pub fn guard_lock<'a, R>(guard: &RefMutexGuard<'a, R>) -> &'a sys::MovableMutex {
 //     guard_lock(guard.0)
 // }
 
-// poison::Flag isn't public API.
-// pub fn guard_poison<'a, T>(guard: &RefMutexGuard<'a, T>) -> &'a poison::Flag {
+// poison::Flag isn'mutex_guard public API.
+// pub fn guard_poison<'a, R>(guard: &RefMutexGuard<'a, R>) -> &'a poison::Flag {
 //     guard_poison(guard.0)
 // }
 
 /// Like `Mutex` of a reference, but with `Send` trait.
-pub struct RefMutex<'mutex, T: 'mutex> {
-    base: Mutex<&'mutex T>,
-    phantom: PhantomData<&'mutex T>,
+pub struct RefMutex<'mutex, R: 'mutex> {
+    base: Mutex<&'mutex R>,
+    phantom: PhantomData<&'mutex R>,
 }
 
-unsafe impl<'mutex, T> Send for RefMutex<'mutex, T> { }
+unsafe impl<'mutex, R> Send for RefMutex<'mutex, R> { }
 
-impl<'mutex, T> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
-    fn from(mutex: Mutex<&'mutex T>) -> Self {
+impl<'mutex, R> From<Mutex<&'mutex R>> for RefMutex<'mutex, R> {
+    fn from(mutex: Mutex<&'mutex R>) -> Self {
         Self::new_helper(mutex)
     }
 }
 
-impl<'mutex, T> RefMutex<'mutex, T> {
-    fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
+impl<'mutex, R> RefMutex<'mutex, R> {
+    fn new_helper(mutex: Mutex<&'mutex R>) -> Self {
         Self { base: mutex, phantom: PhantomData }
     }
     /// Creates a new ref mutex in an unlocked state ready for use.
@@ -136,12 +135,12 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// let r = holder.lock().unwrap();
     /// let mutex = RefMutex::new(r);
     /// ```
-    pub fn new(t: &'mutex T) -> Self {
+    pub fn new(t: &'mutex R) -> Self {
         Self::new_helper(Mutex::new(t))
     }
 }
 
-impl<'mutex, T> RefMutex<'mutex, T> {
+impl<'mutex, R> RefMutex<'mutex, R> {
     /// Acquires a mutex, blocking the current thread until it is able to do so.
     ///
     /// This function will block the local thread until it is available to acquire
@@ -182,7 +181,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// }).join().expect("thread::spawn failed");
     /// assert_eq!(*mutex.lock().unwrap(), 10);
     /// ```
-    pub fn lock<'result: 'mutex>(&'result self) -> LockResult<RefMutexGuard<'_, 'result, T>> { // TODO: Are two lifetimes needed?
+    pub fn lock<'result: 'mutex>(&'result self) -> LockResult<RefMutexGuard<'result, R>> { // TODO: Are two lifetimes needed?
         RefMutexGuard::new(self.base.lock())
     }
 
@@ -230,8 +229,8 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// assert_eq!(*mutex.lock().unwrap(), 10);
     /// ```
     // FIXME: Simplify?
-    // FIXME: The output lifetime must be 
-    pub fn try_lock<'mutex_guard>(&/*'mutex*/ self) -> TryLockResult<RefMutexGuard<'_, 'mutex_guard, T>>
+    // FIXME: The output lifetime must be shorter than `self` and longer than 'mutex
+    pub fn try_lock<'mutex_guard>(&/*'mutex*/ self) -> TryLockResult<RefMutexGuard<'mutex_guard, R>>
     where 'mutex: 'mutex_guard
     {
         RefMutexGuard::new2(self.base.try_lock())
@@ -256,7 +255,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// *guard += 20;
     /// RefMutex::unlock(guard);
     /// ```
-    pub fn unlock(guard: RefMutexGuard<'_, '_, T>) {
+    pub fn unlock(guard: RefMutexGuard<'_, R>) {
         Mutex::unlock(guard.base)
     }
 
@@ -309,13 +308,13 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// let mutex = RefMutex::new(r);
     /// assert_eq!(*mutex.into_inner().unwrap(), 0);
     /// ```
-    pub fn into_inner(self) -> LockResult<&'mutex T>
+    pub fn into_inner(self) -> LockResult<&'mutex R>
     {
         self.base.into_inner()
     }
 }
 
-impl<'mutex, T: Copy> RefMutex<'mutex, T> {
+impl<'mutex, R: Copy> RefMutex<'mutex, R> {
     /// Returns a mutable reference to the underlying data.
     ///
     /// Since this call borrows the `Mutex` mutably, no actual locking needs to
@@ -340,7 +339,7 @@ impl<'mutex, T: Copy> RefMutex<'mutex, T> {
     /// *mutex.lock().unwrap() = 10;
     /// assert_eq!(*mutex.lock().unwrap(), 10);
     /// ```
-    pub fn get_mut(&mut self) -> LockResult<&'mutex T> {
+    pub fn get_mut(&mut self) -> LockResult<&'mutex R> {
         match self.base.get_mut() {
             Ok(r) => Ok(*r),
             Err(err) => Err(PoisonError::new(*err.into_inner())),
@@ -348,7 +347,7 @@ impl<'mutex, T: Copy> RefMutex<'mutex, T> {
     }
 }
 
-impl<'mutex, T: fmt::Debug> fmt::Debug for RefMutex<'mutex, T> {
+impl<'mutex, R: fmt::Debug> fmt::Debug for RefMutex<'mutex, R> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut d = f.debug_struct("RefMutex");
         match self.try_lock() {
@@ -373,16 +372,16 @@ impl<'mutex, T: fmt::Debug> fmt::Debug for RefMutex<'mutex, T> {
     }
 }
 
-// impl<T> MyDeref for Mutex<SafeRef<'_, T>> {
-//     type Target = T;
-//     fn deref(&self) -> &T {
+// impl<R> MyDeref for Mutex<SafeRef<'_, R>> {
+//     type Target = R;
+//     fn deref(&self) -> &R {
 //         self.lock()
 //     }
 // }
 
-// impl<T> Deref for dyn MyDeref<Target = T> {
-//     type Target = T;
-//     fn deref(&self) -> &T {
+// impl<R> Deref for dyn MyDeref<Target = R> {
+//     type Target = R;
+//     fn deref(&self) -> &R {
 //         self.lock()
 //     }
 // }
