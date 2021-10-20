@@ -108,7 +108,7 @@ impl<T: fmt::Display> fmt::Display for RefMutexGuard<'_, '_, T> {
 
 /// Like `Mutex` of a reference, but with `Send` trait, even if T isn't TODO.
 pub struct RefMutex<'mutex, T> {
-    base: Mutex<&'mutex T>,
+    pub base: Mutex<&'mutex T>, // FIXME: !pub
     phantom: PhantomData<&'mutex T>,
 }
 
@@ -230,9 +230,10 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// let c_mutex = Arc::clone(&mutex);
     ///
     /// thread::spawn(move || {
-    ///     let lock = c_mutex.try_lock();
-    ///     if let Ok(guard) = lock {
-    ///         assert_eq!(**mutex.lock().unwrap(), 10);
+    ///     let mut lock = c_mutex.try_lock();
+    ///     if let Ok(ref mut mutex) = lock {
+    ///         **mutex = &20;
+    ///         assert_eq!(***mutex, 20);
     ///     } else {
     ///         println!("try_lock failed");
     ///     }
@@ -342,8 +343,8 @@ impl<'mutex, T: Copy> RefMutex<'mutex, T> {
     /// extern crate owning_ref;
     /// let mut holder = Arc::new(Mutex::new(&10)); // TODO: simply 0
     /// let mutex = RefMutex::move_mutex(holder);
-    /// *mutex.lock().unwrap() = *mutex.lock().unwrap(); // TODO: better example
-    /// assert_eq!(**mutex.lock().unwrap(), 10);
+    /// *mutex.lock().unwrap() = &20;
+    /// assert_eq!(**mutex.lock().unwrap(), 20);
     /// ```
     pub fn get_mut(&mut self) -> LockResult<&'mutex T> { // TODO: 'mutex -> '_
         match self.base.get_mut() {
