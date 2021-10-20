@@ -10,4 +10,4 @@ name = "ref_mutex"
 
 # TODO: [dev-dependencies]
 [dependencies]
-owning_ref = "*"
+owning_ref = "^0.4.1"
