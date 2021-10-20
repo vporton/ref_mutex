@@ -111,7 +111,6 @@ pub struct RefMutex<'mutex, T: ?Sized> {
     phantom: PhantomData<&'mutex T>,
 }
 
-// TODO: Is `Sync` needed here?
 unsafe impl<'mutex, T: ?Sized + Sync> Sync for RefMutex<'mutex, T> {}
 
 unsafe impl<'mutex, T: ?Sized> Send for RefMutex<'mutex, T> { }
