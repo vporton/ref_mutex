@@ -6,7 +6,7 @@
 
 pub use std::ops::{Deref, DerefMut};
 
-use std::{borrow::Borrow, fmt::{self}, marker::PhantomData, sync::{Arc, LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
+use std::{borrow::Borrow, fmt::{self, Debug}, marker::PhantomData, sync::{Arc, LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
 // struct SafeRef<'a, T>(&'a T);
 
 // trait MyDeref {
@@ -114,22 +114,33 @@ pub struct RefMutex<'mutex, T> {
 
 unsafe impl<'mutex, T> Send for RefMutex<'mutex, T> { }
 
-impl<'mutex, T> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
+impl<'mutex, T: fmt::Debug> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
     fn from(mutex: Mutex<&'mutex T>) -> Self {
         Self::new_helper(mutex)
     }
 }
 
+// TODO: pub here and in other places.
 impl<'mutex, T: fmt::Debug> RefMutex<'mutex, T> {
     fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
         Self { base: mutex, phantom: PhantomData }
     }
-    fn borrow_double_mutex(r: Arc<Mutex<Arc<Mutex<&'mutex T>>>>) -> Self {
-        let r = r.borrow() as &Mutex<Arc<Mutex<&'mutex T>>>;
-        let mut r = *r.lock().unwrap();
-        let r = Arc::try_unwrap(r).unwrap();
-        Self::new_helper(r)
+    fn clone_double_mutex(r: &Arc<Mutex<Arc<Mutex<&'mutex T>>>>) -> Self {
+        let inner = r.lock().unwrap().clone();
+        let mutex = Arc::try_unwrap(inner).unwrap();
+        Self::new_helper(mutex)
     }
+    fn move_double_mutex(r: &Arc<Mutex<Arc<Mutex<&'mutex T>>>>) -> Self {
+        let result = Self::clone_double_mutex(r);
+        drop(r);
+        result
+    }
+    // fn clone_double_mutex(r: Arc<Mutex<Arc<Mutex<&'mutex T>>>>) -> Self { // needed?
+    //     let borrowed = r.clone();
+    //     let mut inner = *borrowed.lock().unwrap();
+    //     let mutex = Arc::try_unwrap(inner).unwrap();
+    //     Self::new_helper(mutex)
+    // }
     /// Creates a new ref mutex in an unlocked state ready for use.
     ///
     /// # Examples
@@ -143,7 +154,7 @@ impl<'mutex, T: fmt::Debug> RefMutex<'mutex, T> {
     /// let r = Arc::new(Mutex::new(holder));
     /// let mutex = RefMutex::new(&r);
     /// ```
-    pub fn new(t: &'mutex T) -> RefMutex<'mutex, T> { // FIXME
+    pub fn new(t: &'mutex T) -> Self {
         Self::new_helper(Mutex::new(t))
     }
 }
