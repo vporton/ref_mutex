@@ -288,7 +288,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// let mutex = RefMutex::move_mutex(holder);
     ///
     /// let mut guard = mutex.lock().unwrap();
-    /// *guard = *guard; // TODO: Better example.
+    /// *guard = &20;
     /// RefMutex::unlock(guard);
     /// ```
     pub fn unlock(guard: RefMutexGuard<'_, '_, T>) {
