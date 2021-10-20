@@ -16,7 +16,6 @@ use std::{fmt::{self}, marker::PhantomData, sync::{Arc, LockResult, Mutex, Mutex
 //     }
 // }
 
-// TODO: Do we need here both 'mutex_guard and 'base_mutex_guard?
 pub struct RefMutexGuard<'r, 'v, T> {
     // Having the same lifetime 'r of the reference, we may have different lifetimes 'v of the underlyng type T.
     base: MutexGuard<'r, &'v T>,
@@ -66,7 +65,6 @@ impl<'r, 'v, T> RefMutexGuard<'r, 'v, T>
 impl<'v, T> Deref for RefMutexGuard<'_, 'v, T> {
     type Target = &'v T;
 
-    // TODO: Can we instead return `&&T`?
     fn deref(&self) -> &&'v T {
         &*self.base.deref()
     }
@@ -186,7 +184,6 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     ///
     /// let holder = Arc::new(Mutex::new(&10)); // TODO: A method to create RefMutex directly from value.
     /// let mutex = RefMutex::move_mutex(holder);
-    /// let c_mutex = Arc::clone(&mutex); // FIXME: Not used (in other places, too?)
     ///
     /// thread::spawn(move || {
     ///     *c_mutex.lock().unwrap() = &20;
