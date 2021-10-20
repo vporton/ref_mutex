@@ -108,7 +108,7 @@ impl<T: fmt::Display> fmt::Display for RefMutexGuard<'_, '_, T> {
 
 /// Like `Mutex` of a reference, but with `Send` trait, even if T isn't TODO.
 pub struct RefMutex<'mutex, T> {
-    pub base: Mutex<&'mutex T>, // FIXME: !pub
+    base: Mutex<&'mutex T>,
     phantom: PhantomData<&'mutex T>,
 }
 
