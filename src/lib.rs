@@ -343,7 +343,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// let mutex = RefMutex::new(&holder);
     /// assert_eq!(**(**mutex.into_inner().unwrap()).lock().unwrap(), 10);
     /// ```
-    pub fn into_inner(self) -> LockResult<&'mutex T> // TODO: 'mutex -> '_
+    pub fn into_inner(self) -> LockResult<&'mutex T>
     {
         self.base.into_inner()
     }
@@ -369,12 +369,12 @@ impl<'mutex, T: Copy> RefMutex<'mutex, T> {
     /// use std::borrow::Borrow;
     ///
     /// extern crate owning_ref;
-    /// let mut holder = Arc::new(Mutex::new(&10)); // TODO: simply 0
+    /// let mut holder = Arc::new(Mutex::new(&10));
     /// let mutex = RefMutex::move_mutex(holder);
     /// *mutex.lock().unwrap() = &20;
     /// assert_eq!(**mutex.lock().unwrap(), 20);
     /// ```
-    pub fn get_mut(&mut self) -> LockResult<&'mutex T> { // TODO: 'mutex -> '_
+    pub fn get_mut(&mut self) -> LockResult<&'mutex T> {
         match self.base.get_mut() {
             Ok(r) => Ok(*r),
             Err(err) => Err(PoisonError::new(*err.into_inner())),
