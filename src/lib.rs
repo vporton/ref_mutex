@@ -406,17 +406,3 @@ impl<'mutex, T: fmt::Debug> fmt::Debug for RefMutex<'mutex, T> {
         d.finish_non_exhaustive()
     }
 }
-
-// impl<T> MyDeref for Mutex<SafeRef<'_, T>> {
-//     type Target = T;
-//     fn deref(&self) -> &T {
-//         self.lock()
-//     }
-// }
-
-// impl<T> Deref for dyn MyDeref<Target = T> {
-//     type Target = T;
-//     fn deref(&self) -> &T {
-//         self.lock()
-//     }
-// }
