@@ -118,7 +118,6 @@ impl<T: fmt::Display> fmt::Display for RefMutexGuard<'_, '_, T> {
 // }
 
 /// Like `Mutex` of a reference, but with `Send` trait, even if T isn't `Send`.
-// TODO: Can it be instead a trait and implement it for `Mutex`?
 pub struct RefMutex<'mutex, T> {
     base: Mutex<&'mutex T>,
     phantom: PhantomData<&'mutex T>,
