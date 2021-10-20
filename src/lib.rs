@@ -120,12 +120,12 @@ impl<'mutex, T> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
     }
 }
 
-impl<'mutex, T> RefMutex<'mutex, T> {
+impl<'mutex, T: fmt::Debug> RefMutex<'mutex, T> {
     fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
         Self { base: mutex, phantom: PhantomData }
     }
     fn borrow_double_mutex(r: Arc<Mutex<Arc<Mutex<&'mutex T>>>>) -> Self {
-        let r = r.borrow() as Mutex<Arc<Mutex<&'mutex T>>>;
+        let r = r.borrow() as &Mutex<Arc<Mutex<&'mutex T>>>;
         let mut r = *r.lock().unwrap();
         let r = Arc::try_unwrap(r).unwrap();
         Self::new_helper(r)
