@@ -152,7 +152,7 @@ impl<'mutex, T: fmt::Debug> RefMutex<'mutex, T> {
     fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
         Self { base: mutex, phantom: PhantomData }
     }
-    pub fn move_mutex(r: Arc<Mutex<&'mutex T>>) -> Arc<Self> { // TODO: Make this a method of `Mutex`?
+    pub fn move_mutex(r: Arc<Mutex<&'mutex T>>) -> Arc<Self> {
         let mutex = Arc::try_unwrap(r).unwrap();
         Arc::new(Self::new_helper(mutex))
     }
