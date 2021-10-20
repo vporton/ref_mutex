@@ -144,12 +144,6 @@ impl<'mutex, T: ?Sized + fmt::Debug> RefMutex<'mutex, T> {
         let mutex = Arc::try_unwrap(r).unwrap();
         Arc::new(Self::new_helper(mutex))
     }
-    // fn clone_double_mutex(r: Arc<Mutex<Arc<Mutex<&'mutex T>>>>) -> Self { // needed?
-    //     let borrowed = r.clone();
-    //     let mut inner = *borrowed.lock().unwrap();
-    //     let mutex = Arc::try_unwrap(inner).unwrap();
-    //     Self::new_helper(mutex)
-    // }
     /// Creates a new ref mutex in an unlocked state ready for use.
     ///
     /// # Examples
