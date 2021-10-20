@@ -3,6 +3,8 @@
 #![feature(mutex_unlock)]
 #![feature(negative_impls)]
 
+// TODO: It seems this can be instead be done as a patch to standard library.
+
 use std::ops::{Deref, DerefMut};
 use std::{fmt::{self}, marker::PhantomData, sync::{Arc, LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
 
