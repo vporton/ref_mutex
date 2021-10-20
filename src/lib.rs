@@ -96,12 +96,12 @@ impl<T: fmt::Display + ?Sized> fmt::Display for RefMutexGuard<'_, '_, T> {
     }
 }
 
-// sys::MovableMutex isn'mutex_guard public API.
+// sys::MovableMutex isn't public API.
 // pub fn guard_lock<'a, T: ?Sized>(guard: &RefMutexGuard<'a, T>) -> &'a sys::MovableMutex {
 //     guard_lock(guard.0)
 // }
 
-// poison::Flag isn'mutex_guard public API.
+// poison::Flag isn't public API.
 // pub fn guard_poison<'a, T: ?Sized>(guard: &RefMutexGuard<'a, T>) -> &'a poison::Flag {
 //     guard_poison(guard.0)
 // }
