@@ -189,7 +189,8 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// let c_mutex = Arc::clone(&mutex); // FIXME: Not used (in other places, too?)
     ///
     /// thread::spawn(move || {
-    ///     assert_eq!(**mutex.lock().unwrap(), 10);
+    ///     *c_mutex.lock().unwrap() = &20;
+    ///     assert_eq!(**mutex.lock().unwrap(), 20);
     /// }).join().expect("thread::spawn failed");
     /// ```
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
