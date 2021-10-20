@@ -70,8 +70,6 @@ impl<'v, T: ?Sized> Deref for RefMutexGuard<'_, 'v, T> {
     }
 }
 
-// It's impossible: If two threads obtained mutable references to T and then copy them,
-// they would be able later both modify the value of T.
 impl<'v, T: ?Sized> DerefMut for RefMutexGuard<'_, 'v, T> {
     fn deref_mut(&mut self) -> &mut &'v T {
         &mut *self.base.deref_mut()
@@ -79,7 +77,7 @@ impl<'v, T: ?Sized> DerefMut for RefMutexGuard<'_, 'v, T> {
 }
 
 // TODO: Make better
-impl<T: ?Sized + fmt::Display> fmt::Debug for RefMutexGuard<'_, '_, T> {
+impl<T: ?Sized + fmt::Debug> fmt::Debug for RefMutexGuard<'_, '_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("RefMutexGuard(")?;
         self.base.fmt(f)?;
