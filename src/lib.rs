@@ -26,7 +26,7 @@ pub struct RefMutexGuard<'r, 'v, T> {
 impl<T> !Send for RefMutexGuard<'_, '_, T> {}
 
 // The below test shows it is automatically implemented.
-// unsafe impl<T: Sync, &'mutex_guard T> Sync for RefMutexGuard<'_, T> {} // FIXME
+// unsafe impl<T: Sync, &'mutex_guard T> Sync for RefMutexGuard<'_, T> {}
 
 #[cfg(test)]
 mod tests {
