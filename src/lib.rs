@@ -8,14 +8,6 @@
 pub use std::ops::{Deref, DerefMut};
 
 use std::{fmt::{self}, marker::PhantomData, sync::{Arc, LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
-// struct SafeRef<'a, T>(&'a T);
-
-// trait MyDeref {
-//     type Target;
-//     fn deref(&self) -> &T {
-//         self.lock()
-//     }
-// }
 
 pub struct RefMutexGuard<'r, 'v, T> {
     // Having the same lifetime 'r of the reference, we may have different lifetimes 'v of the underlyng type T.
