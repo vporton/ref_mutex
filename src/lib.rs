@@ -3,8 +3,7 @@
 #![feature(mutex_unlock)]
 #![feature(negative_impls)]
 
-pub use std::ops::{Deref, DerefMut};
-
+use std::ops::{Deref, DerefMut};
 use std::{fmt::{self}, marker::PhantomData, sync::{Arc, LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
 
 pub struct RefMutexGuard<'r, 'v, T: ?Sized> {
@@ -27,38 +26,38 @@ mod tests {
     fn test_sync_guard() {
         let mutex = Mutex::new(&0);
         let lock = mutex.lock().unwrap();
-        let _: &dyn Sync = &RefMutexGuard::new_helper(lock);
+        let _: &dyn Sync = &RefMutexGuard::new(lock);
     }
 }
 
 unsafe impl<'mutex, T: Sync + ?Sized> Sync for RefMutex<'mutex, T> {}
 
+// TODO: from/into
 impl<'r, 'v, T: ?Sized> RefMutexGuard<'r, 'v, T>
 {
-    fn new_helper(lock: MutexGuard<'r, &'v T>) -> Self
+    pub fn new(lock: MutexGuard<'r, &'v T>) -> Self
     {
         Self { base: lock, phantom: PhantomData }
     }
-    // TODO: pub?
-    fn new(lock: LockResult<MutexGuard<'r, &'v T>>) -> Result<Self, PoisonError<Self>>
+    pub fn from_lock_result(lock: LockResult<MutexGuard<'r, &'v T>>) -> Result<Self, PoisonError<Self>>
     {
         match lock {
-            Ok(lock) => Ok(Self::new_helper(lock)),
+            Ok(lock) => Ok(Self::new(lock)),
             Err(err) => {
                 let e = err.into_inner();
-                let e2 = Self::new_helper(e);
+                let e2 = Self::new(e);
                 Err(PoisonError::new(e2))
             },
         }
     }
-    fn new2(lock: TryLockResult<MutexGuard<'r, &'v T>>) -> Result<Self, TryLockError<Self>>
+    pub fn from_try_lock_result(lock: TryLockResult<MutexGuard<'r, &'v T>>) -> Result<Self, TryLockError<Self>>
     {
         match lock {
-            Ok(lock) => Ok(Self::new_helper(lock)),
+            Ok(lock) => Ok(Self::new(lock)),
             Err(TryLockError::WouldBlock) => Err(TryLockError::WouldBlock),
             Err(TryLockError::Poisoned(err)) => {
                 let e = err.into_inner();
-                let e2 = Self::new_helper(e);
+                let e2 = Self::new(e);
                 Err(TryLockError::Poisoned(PoisonError::new(e2)))
             },
         }
@@ -137,7 +136,6 @@ impl<'mutex, T: fmt::Debug + ?Sized> From<Mutex<&'mutex T>> for RefMutex<'mutex,
     }
 }
 
-// TODO: pub here and in other places.
 impl<'mutex, T: fmt::Debug + ?Sized> RefMutex<'mutex, T> {
     fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
         Self { base: mutex, phantom: PhantomData }
@@ -209,7 +207,7 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// ```
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
     pub fn lock(&self) -> LockResult<RefMutexGuard<'_, 'mutex, T>> {
-        RefMutexGuard::new(self.base.lock())
+        RefMutexGuard::from_lock_result(self.base.lock())
     }
 
     /// Attempts to acquire this lock.
@@ -257,7 +255,7 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
     pub fn try_lock(&self) -> TryLockResult<RefMutexGuard<'_, 'mutex, T>>
     {
-        RefMutexGuard::new2(self.base.try_lock())
+        RefMutexGuard::from_try_lock_result(self.base.try_lock())
     }
 
     /// Immediately drops the guard, and consequently unlocks the mutex.
