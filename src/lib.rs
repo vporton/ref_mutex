@@ -3,7 +3,9 @@
 #![feature(mutex_unlock)]
 #![feature(negative_impls)]
 
-// TODO: It seems this can be instead be done as a patch to standard library.
+/// TODO: It seems this can be instead be done as a patch to standard library:
+/// unsafe impl<'mutex, T: ?Sized + Sync> Sync for Mutex<'mutex, T> {}
+/// unsafe impl<'mutex, T: ?Sized> Send for Mutex<'mutex, T> { }
 
 use std::ops::{Deref, DerefMut};
 use std::{fmt::{self}, marker::PhantomData, sync::{Arc, LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
