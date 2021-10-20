@@ -171,8 +171,7 @@ impl<'mutex, T: fmt::Debug> RefMutex<'mutex, T> {
     /// pub use std::ops::{Deref, DerefMut};
     /// use ref_mutex::RefMutex;
     ///
-    /// let holder = Arc::new(Mutex::new(&10));
-    /// let mutex = RefMutex::move_mutex(holder);
+    /// let mutex = Arc::new(RefMutex::new(&10));
     /// ```
     pub fn new(t: &'mutex T) -> Self {
         Self::new_helper(Mutex::new(t))
@@ -210,8 +209,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     ///
-    /// let holder = Arc::new(Mutex::new(&10)); // TODO: A method to create RefMutex directly from value.
-    /// let mutex = RefMutex::move_mutex(holder);
+    /// let mutex = Arc::new(RefMutex::new(&10));
     /// let c_mutex = Arc::clone(&mutex);
     ///
     /// thread::spawn(move || {
@@ -253,8 +251,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     /// use std::borrow::Borrow;
-    /// let mut holder = Arc::new(Mutex::new(&10));
-    /// let mutex = RefMutex::move_mutex(holder);
+    /// let mutex = Arc::new(RefMutex::new(&10));
     /// let c_mutex = Arc::clone(&mutex);
     ///
     /// thread::spawn(move || {
@@ -284,8 +281,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use std::sync::{Arc, Mutex};
     /// pub use std::ops::{Deref, DerefMut};
     /// use ref_mutex::RefMutex;
-    /// let holder = Arc::new(Mutex::new(&10));
-    /// let mutex = RefMutex::move_mutex(holder);
+    /// let mutex = Arc::new(RefMutex::new(&10));
     ///
     /// let mut guard = mutex.lock().unwrap();
     /// *guard = &20;
@@ -310,8 +306,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use std::thread;
     /// use std::borrow::Borrow;
     ///
-    /// let holder = Arc::new(Mutex::new(&10));
-    /// let mutex = RefMutex::move_mutex(holder);
+    /// let mutex = Arc::new(RefMutex::new(&10));
     /// let c_mutex = Arc::clone(&mutex);
     ///
     /// let _ = thread::spawn(move || {
@@ -337,11 +332,10 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// ```
     /// use std::sync::{Arc, Mutex};
     /// pub use std::ops::{Deref, DerefMut};
-    /// use  ref_mutex::RefMutex;
+    /// use ref_mutex::RefMutex;
     ///
-    /// let holder = Arc::new(Mutex::new(&10));
-    /// let mutex = RefMutex::new(&holder);
-    /// assert_eq!(**(**mutex.into_inner().unwrap()).lock().unwrap(), 10);
+    /// let mutex = RefMutex::new(&10);
+    /// assert_eq!(*mutex.into_inner().unwrap(), 10);
     /// ```
     pub fn into_inner(self) -> LockResult<&'mutex T>
     {
@@ -369,8 +363,7 @@ impl<'mutex, T: Copy> RefMutex<'mutex, T> {
     /// use std::borrow::Borrow;
     ///
     /// extern crate owning_ref;
-    /// let mut holder = Arc::new(Mutex::new(&10));
-    /// let mutex = RefMutex::move_mutex(holder);
+    /// let mutex = Arc::new(RefMutex::new(&10));
     /// *mutex.lock().unwrap() = &20;
     /// assert_eq!(**mutex.lock().unwrap(), 20);
     /// ```
