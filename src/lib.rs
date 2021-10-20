@@ -182,7 +182,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// thread::spawn(move || {
     ///     **c_mutex.lock().unwrap() = **c_mutex.lock().unwrap(); // TODO: better example
     /// }).join().expect("thread::spawn failed");
-    /// assert_eq!(**mutex.lock().unwrap(), 10);
+    /// assert_eq!(***mutex.lock().unwrap(), 10);
     /// ```
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
     pub fn lock(&self) -> LockResult<RefMutexGuard<'_, 'mutex, T>> { // TODO: 'mutex -> '_
@@ -230,7 +230,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     ///         println!("try_lock failed");
     ///     }
     /// }).join().expect("thread::spawn failed");
-    /// assert_eq!(**mutex.lock().unwrap(), 10);
+    /// assert_eq!(***mutex.lock().unwrap(), 10);
     /// ```
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
     pub fn try_lock(&self) -> TryLockResult<RefMutexGuard<'_, 'mutex, T>> // TODO: 'mutex -> '_
@@ -339,7 +339,7 @@ impl<'mutex, T: Copy> RefMutex<'mutex, T> {
     /// let r = holder.lock().unwrap();
     /// let mutex = Arc::new(RefMutex::new(&r));
     /// *mutex.lock().unwrap() = *mutex.lock().unwrap(); // TODO: better example
-    /// assert_eq!(**mutex.lock().unwrap(), 10);
+    /// assert_eq!(***mutex.lock().unwrap(), 10);
     /// ```
     pub fn get_mut(&mut self) -> LockResult<&'mutex T> { // TODO: 'mutex -> '_
         match self.base.get_mut() {
