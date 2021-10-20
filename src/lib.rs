@@ -150,8 +150,7 @@ impl<'mutex, T: ?Sized + fmt::Debug> RefMutex<'mutex, T> {
     /// # Examples
     ///
     /// ```
-    /// pub use std::sync::{Arc, Mutex};
-    /// pub use std::ops::{Deref, DerefMut};
+    /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     ///
     /// let mutex = Arc::new(RefMutex::new(&10));
@@ -186,9 +185,7 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// # Examples
     ///
     /// ```
-    /// extern crate owning_ref;
-    /// pub use std::ops::{Deref, DerefMut};
-    /// use std::sync::{Arc, Mutex};
+    /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     ///
@@ -228,12 +225,10 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// # Examples
     ///
     /// ```
-    /// extern crate owning_ref;
-    /// pub use std::ops::{Deref, DerefMut};
-    /// use std::sync::{Arc, Mutex};
+    /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     /// use std::thread;
-    /// use std::borrow::Borrow;
+    ///
     /// let mutex = Arc::new(RefMutex::new(&10));
     /// let c_mutex = Arc::clone(&mutex);
     ///
@@ -261,11 +256,10 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// ```
     /// #![feature(mutex_unlock)]
     ///
-    /// use std::sync::{Arc, Mutex};
-    /// pub use std::ops::{Deref, DerefMut};
+    /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
-    /// let mutex = Arc::new(RefMutex::new(&10));
     ///
+    /// let mutex = Arc::new(RefMutex::new(&10));
     /// let mut guard = mutex.lock().unwrap();
     /// *guard = &20;
     /// RefMutex::unlock(guard);
@@ -283,11 +277,9 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// # Examples
     ///
     /// ```
-    /// use std::sync::{Arc, Mutex};
-    /// use std::ops::{Deref, DerefMut};
+    /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     /// use std::thread;
-    /// use std::borrow::Borrow;
     ///
     /// let mutex = Arc::new(RefMutex::new(&10));
     /// let c_mutex = Arc::clone(&mutex);
@@ -313,8 +305,7 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// # Examples
     ///
     /// ```
-    /// use std::sync::{Arc, Mutex};
-    /// pub use std::ops::{Deref, DerefMut};
+    /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     ///
     /// let mutex = RefMutex::new(&10);
@@ -338,12 +329,9 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// # Examples
     ///
     /// ```
-    /// use std::sync::{Arc, Mutex};
-    /// use std::ops::{Deref, DerefMut};
+    /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
-    /// use std::borrow::Borrow;
     ///
-    /// extern crate owning_ref;
     /// let mutex = Arc::new(RefMutex::new(&10));
     /// *mutex.lock().unwrap() = &20;
     /// assert_eq!(**mutex.lock().unwrap(), 20);
