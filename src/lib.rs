@@ -117,7 +117,7 @@ impl<T: fmt::Display> fmt::Display for RefMutexGuard<'_, '_, T> {
 //     guard_poison(guard.0)
 // }
 
-/// Like `Mutex` of a reference, but with `Send` trait, even if T isn't TODO.
+/// Like `Mutex` of a reference, but with `Send` trait, even if T isn't `Send`.
 // TODO: Can it be instead a trait and implement it for `Mutex`?
 pub struct RefMutex<'mutex, T> {
     base: Mutex<&'mutex T>,
@@ -125,6 +125,22 @@ pub struct RefMutex<'mutex, T> {
 }
 
 unsafe impl<'mutex, T> Send for RefMutex<'mutex, T> { }
+
+#[cfg(test)]
+mod tests2 {
+    use crate::RefMutex;
+
+    #[test]
+    fn test_sync_guard() {
+        #[derive(Debug)]
+        struct NotSend {}
+        impl !Send for NotSend {}
+
+        let mutex = RefMutex::new(&NotSend{}); // RefMutex should be `Send` even if the argument is `!Send`.
+        let _: &dyn Sync = &mutex;
+        let _: &dyn Send = &mutex;
+    }
+}
 
 impl<'mutex, T: fmt::Debug> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
     fn from(mutex: Mutex<&'mutex T>) -> Self {
