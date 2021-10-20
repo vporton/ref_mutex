@@ -2,12 +2,11 @@
 
 [package]
 name = "mutex-extra"
-version = "0.9.1"
+version = "0.9.2"
 # edition = "2021"
 
 [lib]
 name = "ref_mutex"
 
-# TODO: [dev-dependencies]
-[dependencies]
+[dev-dependencies]
 owning_ref = "^0.4.1"
