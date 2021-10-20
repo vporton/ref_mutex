@@ -1,6 +1,7 @@
 #![feature(associated_type_defaults)]
 #![feature(associated_type_bounds)]
 #![feature(mutex_unlock)]
+#![feature(negative_impls)]
 
 // TODO: Add ?Sized
 
@@ -22,9 +23,7 @@ pub struct RefMutexGuard<'r, 'v, T> {
     phantom: PhantomData<&'r T>,
 }
 
-// TODO
-// Needed?
-// impl<T> !Send for RefMutexGuard<'_, T> {}
+impl<T> !Send for RefMutexGuard<'_, '_, T> {}
 
 // TODO: Automatically implemented?
 // unsafe impl<T: Sync, &'mutex_guard T> Sync for RefMutexGuard<'_, T> {} // FIXME
