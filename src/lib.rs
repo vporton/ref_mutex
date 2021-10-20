@@ -385,7 +385,7 @@ impl<'mutex, T: fmt::Debug + ?Sized> fmt::Debug for RefMutex<'mutex, T> {
                 d.field("data", &LockedPlaceholder);
             }
         }
-        d.field("poisoned", &"TODO"/*&self.base.poison.get()*/);
+        d.field("poisoned", &self.is_poisoned());
         d.finish_non_exhaustive()
     }
 }
