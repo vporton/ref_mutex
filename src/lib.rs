@@ -6,7 +6,7 @@
 
 pub use std::ops::{Deref, DerefMut};
 
-use std::{fmt::{self}, marker::PhantomData, sync::{LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
+use std::{borrow::Borrow, fmt::{self}, marker::PhantomData, sync::{Arc, LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult}};
 // struct SafeRef<'a, T>(&'a T);
 
 // trait MyDeref {
@@ -124,6 +124,12 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
         Self { base: mutex, phantom: PhantomData }
     }
+    fn borrow_double_mutex(r: Arc<Mutex<Arc<Mutex<&'mutex T>>>>) -> Self {
+        let r = r.borrow() as Mutex<Arc<Mutex<&'mutex T>>>;
+        let mut r = *r.lock().unwrap();
+        let r = Arc::try_unwrap(r).unwrap();
+        Self::new_helper(r)
+    }
     /// Creates a new ref mutex in an unlocked state ready for use.
     ///
     /// # Examples
@@ -133,14 +139,11 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// pub use std::ops::{Deref, DerefMut};
     /// use ref_mutex::RefMutex;
     ///
-    /// let holder = Arc::new(Mutex::new(0u16));
+    /// let holder = Arc::new(Mutex::new(&0u16));
     /// let r = Arc::new(Mutex::new(holder));
     /// let mutex = RefMutex::new(&r);
     /// ```
     pub fn new(t: &'mutex T) -> RefMutex<'mutex, T> { // FIXME
-        Self::new_helper(Mutex::new(t))
-    }
-    pub fn new_general(t: &'mutex T) -> Self {
         Self::new_helper(Mutex::new(t))
     }
 }
@@ -176,7 +179,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     ///
-    /// let holder = Arc::new(Mutex::new(0u16));
+    /// let holder = Arc::new(Mutex::new(&0u16));
     /// let r = Arc::new(Mutex::new(holder));
     /// let mutex: Arc<RefMutex<'_, u16>> = Arc::new(RefMutex::new(r.borrow()));
     /// let c_mutex = Arc::clone(&mutex);
@@ -220,7 +223,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     /// use std::borrow::Borrow;
-    /// let mut holder = Arc::new(Mutex::new(0u16));
+    /// let mut holder = Arc::new(Mutex::new(&0u16));
     /// let r = Arc::new(Mutex::new(holder));
     /// let mutex: Arc<RefMutex<'_, u16>> = Arc::new(RefMutex::new(r.borrow()));
     /// let c_mutex = Arc::clone(&mutex);
@@ -252,7 +255,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use std::sync::{Arc, Mutex};
     /// pub use std::ops::{Deref, DerefMut};
     /// use ref_mutex::RefMutex;
-    /// let holder = Arc::new(Mutex::new(0u16));
+    /// let holder = Arc::new(Mutex::new(&0u16));
     /// let r = Arc::new(Mutex::new(holder));
     /// let mutex = RefMutex::new(&r);
     ///
@@ -279,7 +282,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// use std::thread;
     /// use std::borrow::Borrow;
     ///
-    /// let holder = Arc::new(Mutex::new(0u16));
+    /// let holder = Arc::new(Mutex::new(&0u16));
     /// let r = Arc::new(Mutex::new(holder));
     /// let mutex: Arc<RefMutex<'_, u16>> = Arc::new(RefMutex::new(r.borrow()));
     /// let c_mutex = Arc::clone(&mutex);
@@ -309,7 +312,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// pub use std::ops::{Deref, DerefMut};
     /// use  ref_mutex::RefMutex;
     ///
-    /// let holder = Arc::new(Mutex::new(0u16));
+    /// let holder = Arc::new(Mutex::new(&0u16));
     /// let mutex = RefMutex::new(&holder);
     /// assert_eq!(*(**mutex.into_inner().unwrap()).lock().unwrap(), 0);
     /// ```
@@ -339,7 +342,7 @@ impl<'mutex, T: Copy> RefMutex<'mutex, T> {
     /// use std::borrow::Borrow;
     ///
     /// extern crate owning_ref;
-    /// let mut holder = Arc::new(Mutex::new(0u16)); // TODO: simply 0
+    /// let mut holder = Arc::new(Mutex::new(&0u16)); // TODO: simply 0
     /// let r = Arc::new(Mutex::new(holder));
     /// // TODO: Here and in other places `: Arc<RefMutex<'_, u16>>` is a complication.
     /// let mutex: Arc<RefMutex<'_, u16>> = Arc::new(RefMutex::new(r.borrow()));
