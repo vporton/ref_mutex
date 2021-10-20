@@ -323,9 +323,7 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     {
         self.base.into_inner()
     }
-}
 
-impl<'mutex, T: ?Sized + Copy> RefMutex<'mutex, T> {
     /// Returns a mutable reference to the underlying data.
     ///
     /// Since this call borrows the `Mutex` mutably, no actual locking needs to
