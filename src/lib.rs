@@ -135,17 +135,17 @@ mod tests2 {
 
 impl<'mutex, T: ?Sized + fmt::Debug> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
     fn from(mutex: Mutex<&'mutex T>) -> Self {
-        Self::new_helper(mutex)
+        Self::from_mutex(mutex)
     }
 }
 
 impl<'mutex, T: ?Sized + fmt::Debug> RefMutex<'mutex, T> {
-    fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
+    fn from_mutex(mutex: Mutex<&'mutex T>) -> Self {
         Self { base: mutex, phantom: PhantomData }
     }
     pub fn move_mutex(r: Arc<Mutex<&'mutex T>>) -> Arc<Self> {
         let mutex = Arc::try_unwrap(r).unwrap();
-        Arc::new(Self::new_helper(mutex))
+        Arc::new(Self::from_mutex(mutex))
     }
     /// Creates a new ref mutex in an unlocked state ready for use.
     ///
@@ -158,7 +158,7 @@ impl<'mutex, T: ?Sized + fmt::Debug> RefMutex<'mutex, T> {
     /// let mutex = Arc::new(RefMutex::new(&0));
     /// ```
     pub fn new(t: &'mutex T) -> Self {
-        Self::new_helper(Mutex::new(t))
+        Self::from_mutex(Mutex::new(t))
     }
 }
 
