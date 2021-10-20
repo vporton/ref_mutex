@@ -240,7 +240,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// }).join().expect("thread::spawn failed");
     /// ```
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
-    pub fn try_lock(&self) -> TryLockResult<RefMutexGuard<'_, 'mutex, T>> // TODO: 'mutex -> '_
+    pub fn try_lock(&self) -> TryLockResult<RefMutexGuard<'_, 'mutex, T>>
     {
         RefMutexGuard::new2(self.base.try_lock())
     }
