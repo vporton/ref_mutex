@@ -182,7 +182,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     /// thread::spawn(move || {
     ///     **c_mutex.lock().unwrap() = **c_mutex.lock().unwrap(); // TODO: better example
     /// }).join().expect("thread::spawn failed");
-    /// assert_eq!(***mutex.lock().unwrap(), 10);
+    /// // assert_eq!(***mutex.lock().unwrap(), 10); // TODO
     /// ```
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
     pub fn lock(&self) -> LockResult<RefMutexGuard<'_, 'mutex, T>> { // TODO: 'mutex -> '_
