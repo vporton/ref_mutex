@@ -34,7 +34,6 @@ mod tests {
     }
 }
 
-// TODO: from/into
 impl<'r, 'v, T: ?Sized> RefMutexGuard<'r, 'v, T>
 {
     pub fn new(lock: MutexGuard<'r, &'v T>) -> Self
@@ -65,6 +64,24 @@ impl<'r, 'v, T: ?Sized> RefMutexGuard<'r, 'v, T>
         }
     }
 }
+
+impl<'r, 'v, T: ?Sized> From<MutexGuard<'r, &'v T>> for RefMutexGuard<'r, 'v, T> {
+    fn from(lock: MutexGuard<'r, &'v T>) -> Self {
+        Self::new(lock)
+    }
+}
+
+// impl<'r, 'v, T: ?Sized> From<LockResult<MutexGuard<'r, &'v T>>> for LockResult<MutexGuard<'r, &'v T>> {
+//     fn from(lock: MutexGuard<'r, &'v T>) -> Self {
+//         Self::from_lock_result(lock)
+//     }
+// }
+
+// impl<'r, 'v, T: ?Sized> From<TryLockResult<MutexGuard<'r, &'v T>>> for LockResult<TryLockResult<MutexGuard<'r, &'v T>>> {
+//     fn from(lock: MutexGuard<'r, &'v T>) -> Self {
+//         Self::from_try_lock_result(lock)
+//     }
+// }
 
 impl<'v, T: ?Sized> Deref for RefMutexGuard<'_, 'v, T> {
     type Target = &'v T;
@@ -130,12 +147,6 @@ mod tests2 {
         let mutex = RefMutex::new(&NotSend{}); // RefMutex should be `Send` even if the argument is `!Send`.
         let _: &dyn Sync = &mutex;
         let _: &dyn Send = &mutex;
-    }
-}
-
-impl<'mutex, T: ?Sized + fmt::Debug> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
-    fn from(mutex: Mutex<&'mutex T>) -> Self {
-        Self::from_mutex(mutex)
     }
 }
 
@@ -343,6 +354,12 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
             Ok(r) => Ok(*r),
             Err(err) => Err(PoisonError::new(*err.into_inner())),
         }
+    }
+}
+
+impl<'mutex, T: ?Sized + fmt::Debug> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
+    fn from(mutex: Mutex<&'mutex T>) -> Self {
+        Self::from_mutex(mutex)
     }
 }
 
