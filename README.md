@@ -1,5 +1,7 @@
 ## `ref_mutex` Rust library
 
+**My code seems erroneous!** Don't use.
+
 _Not much tested._
 
 This library implement `RefMutex<T>` that is similar to `Mutex<T>` but is `Sync` and `Send`
