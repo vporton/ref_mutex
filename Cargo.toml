@@ -2,7 +2,7 @@
 
 [package]
 name = "mutex-extra"
-version = "0.9.8"
+version = "0.9.9"
 description = "`RefMutex<T>` that is similar to `Mutex<T>` but is `Sync` and `Send` even if `T` isn't `Send`."
 homepage = "https://github.com/vporton/ref_mutex"
 repository = "https://github.com/vporton/ref_mutex"

@@ -4,4 +4,4 @@ version = 3
 
 [[package]]
 name = "mutex-extra"
-version = "0.9.8"
+version = "0.9.9"
