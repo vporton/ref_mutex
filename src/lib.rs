@@ -15,7 +15,7 @@ pub struct RefMutexGuard<'r, 'v, T: ?Sized> {
 impl<T: ?Sized> !Send for RefMutexGuard<'_, '_, T> {}
 
 // The below test shows it is automatically implemented.
-// unsafe impl<T: Sync + ?Sized, &'mutex_guard T> Sync for RefMutexGuard<'_, T> {}
+// unsafe impl<T: ?Sized + Sync, &'mutex_guard T> Sync for RefMutexGuard<'_, T> {}
 
 #[cfg(test)]
 mod tests {
@@ -29,8 +29,6 @@ mod tests {
         let _: &dyn Sync = &RefMutexGuard::new(lock);
     }
 }
-
-unsafe impl<'mutex, T: Sync + ?Sized> Sync for RefMutex<'mutex, T> {}
 
 // TODO: from/into
 impl<'r, 'v, T: ?Sized> RefMutexGuard<'r, 'v, T>
@@ -81,7 +79,7 @@ impl<'v, T: ?Sized> DerefMut for RefMutexGuard<'_, 'v, T> {
 }
 
 // TODO: Make better
-impl<T: fmt::Debug + ?Sized> fmt::Debug for RefMutexGuard<'_, '_, T> {
+impl<T: ?Sized + fmt::Display> fmt::Debug for RefMutexGuard<'_, '_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("RefMutexGuard(")?;
         self.base.fmt(f)?;
@@ -90,7 +88,7 @@ impl<T: fmt::Debug + ?Sized> fmt::Debug for RefMutexGuard<'_, '_, T> {
     }
 }
 
-impl<T: fmt::Display + ?Sized> fmt::Display for RefMutexGuard<'_, '_, T> {
+impl<T: ?Sized + fmt::Display> fmt::Display for RefMutexGuard<'_, '_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.base.fmt(f)
     }
@@ -113,6 +111,9 @@ pub struct RefMutex<'mutex, T: ?Sized> {
     phantom: PhantomData<&'mutex T>,
 }
 
+// TODO: Is `Sync` needed here?
+unsafe impl<'mutex, T: ?Sized + Sync> Sync for RefMutex<'mutex, T> {}
+
 unsafe impl<'mutex, T: ?Sized> Send for RefMutex<'mutex, T> { }
 
 #[cfg(test)]
@@ -131,13 +132,13 @@ mod tests2 {
     }
 }
 
-impl<'mutex, T: fmt::Debug + ?Sized> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
+impl<'mutex, T: ?Sized + fmt::Debug> From<Mutex<&'mutex T>> for RefMutex<'mutex, T> {
     fn from(mutex: Mutex<&'mutex T>) -> Self {
         Self::new_helper(mutex)
     }
 }
 
-impl<'mutex, T: fmt::Debug + ?Sized> RefMutex<'mutex, T> {
+impl<'mutex, T: ?Sized + fmt::Debug> RefMutex<'mutex, T> {
     fn new_helper(mutex: Mutex<&'mutex T>) -> Self {
         Self { base: mutex, phantom: PhantomData }
     }
@@ -332,7 +333,7 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     }
 }
 
-impl<'mutex, T: Copy + ?Sized> RefMutex<'mutex, T> {
+impl<'mutex, T: ?Sized + Copy> RefMutex<'mutex, T> {
     /// Returns a mutable reference to the underlying data.
     ///
     /// Since this call borrows the `Mutex` mutably, no actual locking needs to
@@ -364,7 +365,7 @@ impl<'mutex, T: Copy + ?Sized> RefMutex<'mutex, T> {
     }
 }
 
-impl<'mutex, T: fmt::Debug + ?Sized> fmt::Debug for RefMutex<'mutex, T> {
+impl<'mutex, T: ?Sized + fmt::Debug> fmt::Debug for RefMutex<'mutex, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut d = f.debug_struct("RefMutex");
         match self.try_lock() {
