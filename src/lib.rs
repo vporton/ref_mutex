@@ -153,7 +153,7 @@ impl<'mutex, T: ?Sized + fmt::Debug> RefMutex<'mutex, T> {
     /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     ///
-    /// let mutex = Arc::new(RefMutex::new(&10));
+    /// let mutex = Arc::new(RefMutex::new(&0));
     /// ```
     pub fn new(t: &'mutex T) -> Self {
         Self::new_helper(Mutex::new(t))
@@ -189,12 +189,12 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     ///
-    /// let mutex = Arc::new(RefMutex::new(&10));
+    /// let mutex = Arc::new(RefMutex::new(&0));
     /// let c_mutex = Arc::clone(&mutex);
     ///
     /// thread::spawn(move || {
-    ///     *c_mutex.lock().unwrap() = &20;
-    ///     assert_eq!(**mutex.lock().unwrap(), 20);
+    ///     *c_mutex.lock().unwrap() = &10;
+    ///     assert_eq!(**mutex.lock().unwrap(), 10);
     /// }).join().expect("thread::spawn failed");
     /// ```
     /// API note: The lifetime of T can be only 'mutex because the lifetime of the result of `self.base.lock()` is such.
@@ -229,14 +229,14 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     ///
-    /// let mutex = Arc::new(RefMutex::new(&10));
+    /// let mutex = Arc::new(RefMutex::new(&0));
     /// let c_mutex = Arc::clone(&mutex);
     ///
     /// thread::spawn(move || {
     ///     let mut lock = c_mutex.try_lock();
     ///     if let Ok(ref mut mutex) = lock {
-    ///         **mutex = &20;
-    ///         assert_eq!(***mutex, 20);
+    ///         **mutex = &10;
+    ///         assert_eq!(***mutex, 10);
     ///     } else {
     ///         println!("try_lock failed");
     ///     }
@@ -259,9 +259,9 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     ///
-    /// let mutex = Arc::new(RefMutex::new(&10));
+    /// let mutex = Arc::new(RefMutex::new(&0));
     /// let mut guard = mutex.lock().unwrap();
-    /// *guard = &20;
+    /// *guard = &10;
     /// RefMutex::unlock(guard);
     /// ```
     pub fn unlock(guard: RefMutexGuard<'_, '_, T>) {
@@ -281,7 +281,7 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// use ref_mutex::RefMutex;
     /// use std::thread;
     ///
-    /// let mutex = Arc::new(RefMutex::new(&10));
+    /// let mutex = Arc::new(RefMutex::new(&0));
     /// let c_mutex = Arc::clone(&mutex);
     ///
     /// let _ = thread::spawn(move || {
@@ -308,8 +308,8 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     ///
-    /// let mutex = RefMutex::new(&10);
-    /// assert_eq!(*mutex.into_inner().unwrap(), 10);
+    /// let mutex = RefMutex::new(&0);
+    /// assert_eq!(*mutex.into_inner().unwrap(), 0);
     /// ```
     pub fn into_inner(self) -> LockResult<&'mutex T>
     {
@@ -332,9 +332,9 @@ impl<'mutex, T: ?Sized> RefMutex<'mutex, T> {
     /// use std::sync::Arc;
     /// use ref_mutex::RefMutex;
     ///
-    /// let mutex = Arc::new(RefMutex::new(&10));
-    /// *mutex.lock().unwrap() = &20;
-    /// assert_eq!(**mutex.lock().unwrap(), 20);
+    /// let mutex = Arc::new(RefMutex::new(&0));
+    /// *mutex.lock().unwrap() = &10;
+    /// assert_eq!(**mutex.lock().unwrap(), 10);
     /// ```
     pub fn get_mut(&mut self) -> LockResult<&'mutex T> {
         match self.base.get_mut() {
