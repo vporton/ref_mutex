@@ -184,6 +184,7 @@ impl<'mutex, T> RefMutex<'mutex, T> {
     ///
     /// let holder = Arc::new(Mutex::new(&10)); // TODO: A method to create RefMutex directly from value.
     /// let mutex = RefMutex::move_mutex(holder);
+    /// let c_mutex = Arc::clone(&mutex);
     ///
     /// thread::spawn(move || {
     ///     *c_mutex.lock().unwrap() = &20;
